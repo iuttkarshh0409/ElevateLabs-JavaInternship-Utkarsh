@@ -1,4 +1,4 @@
-# Student Record Management System – Day 2
+# 🧾 Student Record Management System – Day 2
 **Elevate Labs Java Developer Internship – Task 2**  
 **Repository**: [ELEVATELABS-JAVAINTERNSHIP-UTKARSH/Day-2](https://github.com/ELEVATELABS-JAVAINTERNSHIP-UTKARSH/Day-2)
 
