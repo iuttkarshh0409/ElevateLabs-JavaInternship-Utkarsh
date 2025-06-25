@@ -1,6 +1,8 @@
 # Ignore compiled class files
 *.class
 
+*.vscode
+
 # Ignore log files
 *.log
 
