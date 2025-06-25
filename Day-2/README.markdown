@@ -1,6 +1,6 @@
 # 🧾 Student Record Management System – Day 2
 **Elevate Labs Java Developer Internship – Task 2**  
-**Repository**: [ELEVATELABS-JAVAINTERNSHIP-UTKARSH/Day-2](https://github.com/ELEVATELABS-JAVAINTERNSHIP-UTKARSH/Day-2)
+**Repository**: [ElevateLabs-JavaInternship-Utkarsh](https://github.com/ElevateLabs-JavaInternship-Utkarsh)
 
 A modular, console-based Java application for managing student records. Developed as Task 2 for the Elevate Labs internship, this project demonstrates object-oriented programming, dynamic data structures, menu-driven CLI interaction, and robust input validation.
 
