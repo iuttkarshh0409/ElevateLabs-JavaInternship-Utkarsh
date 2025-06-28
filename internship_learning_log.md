@@ -97,7 +97,7 @@
 
 ---
 
-## 📅 Weekly Reflection (Week 1)
+## 📅 Weekly Reflection (Week 1: 23/06/2025-29/06/2025)
 
 **Overall Progress:**
 - Gained strong grasp over Java basics, OOP, and file handling
