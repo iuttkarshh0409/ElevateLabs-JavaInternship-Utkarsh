@@ -129,7 +129,7 @@ Do you want to continue? (y/n): y
 *Java Developer Intern @ Elevate Labs*  
 📍 Devi Ahilya Vishwavidyalaya, Indore  
 💼 GitHub: [iuttkarshh0409](https://github.com/iuttkarshh0409)  
-📧 Email: utkarshdubey0409@gmail.com
+📧 Email: dubeyutkarsh101@gmail.com
 
 ---
 
