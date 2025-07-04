@@ -223,7 +223,7 @@
 
 ---
 
-## 📅 Weekly Reflection (Week 2: 30/06/2025–04/07/2025)
+## 📅 Weekly Reflection (Week 2: 30/06/2025–06/07/2025)
 
 **Overall Progress:**
 - Transitioned from basic CLI apps to JDBC and GUI
