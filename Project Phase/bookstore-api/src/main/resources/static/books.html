@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Book Management System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        input[type="text"], input[type="number"], input[type="date"] {
+            width: 200px;
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background-color 0.2s;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        button:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+        
+        button.delete {
+            background-color: #f44336;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        button.delete:hover {
+            background-color: #da190b;
+        }
+        
+        #bookList {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            min-height: 200px; /* Prevent layout shift while loading */
+        }
+        
+        #bookList li {
+            background-color: #f9f9f9;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .book-info {
+            flex-grow: 1;
+        }
+        
+        .error {
+            color: #f44336;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .pagination-controls button {
+            background-color: #2196F3;
+        }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background-color: #0b7dda;
+        }
+
+        .page-info {
+            margin: 0 15px;
+            font-weight: bold;
+            color: #555;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Book Management System</h1>
+
+        <section>
+            <h2>📖 Add New Book</h2>
+            <div class="form-group">
+                <input type="text" id="title" placeholder="Book Title" required>
+                <input type="text" id="genre" placeholder="Genre">
+                <input type="number" step="0.01" id="price" placeholder="Price" min="0">
+            </div>
+            <div class="form-group">
+                <input type="date" id="publishedDate" placeholder="Published Date">
+                <input type="text" id="isbn" placeholder="ISBN">
+                <input type="number" id="authorId" placeholder="Author ID" min="1">
+            </div>
+            <button onclick="addBook()">➕ Add Book</button>
+        </section>
+
+        <section>
+            <h2>📚 All Books</h2>
+            <ul id="bookList"></ul>
+            <div class="pagination-controls">
+                <button id="prevPageBtn" onclick="prevPage()">⬅️ Previous</button>
+                <span id="pageInfo" class="page-info"></span>
+                <button id="nextPageBtn" onclick="nextPage()">Next ➡️</button>
+            </div>
+        </section>
+
+        <section>
+            <h2>🔍 Search Book by ID</h2>
+            <input type="number" id="bookIdInput" placeholder="Enter Book ID" min="1">
+            <button onclick="getBookById()">🔍 Search</button>
+            <div id="bookDetails"></div>
+        </section>
+
+        <section>
+            <h2>✏️ Update Book</h2>
+            <div class="form-group">
+                <input type="number" id="updateBookId" placeholder="Book ID to Update" min="1">
+                <input type="text" id="updateTitle" placeholder="New Title">
+                <input type="text" id="updateGenre" placeholder="New Genre">
+            </div>
+            <div class="form-group">
+                <input type="number" step="0.01" id="updatePrice" placeholder="New Price" min="0">
+                <input type="date" id="updatePublishedDate" placeholder="New Published Date">
+                <input type="text" id="updateIsbn" placeholder="New ISBN">
+                <input type="number" id="updateAuthorId" placeholder="New Author ID" min="1">
+            </div>
+            <button onclick="updateBook()">✏️ Update Book</button>
+        </section>
+    </div>
+
+    <script>
+        const API_BASE_URL = "http://localhost:8080/api/books";
+        let currentPage = 0; // Keep track of the current page
+        const pageSize = 5;  // Show 5 books per page
+
+        // --- UPDATED JAVASCRIPT ---
+
+        function loadBooks(page = 0) {
+            const bookList = document.getElementById("bookList");
+            const pageInfo = document.getElementById("pageInfo");
+            const prevPageBtn = document.getElementById("prevPageBtn");
+            const nextPageBtn = document.getElementById("nextPageBtn");
+
+            bookList.innerHTML = '<li class="loading">Loading books...</li>';
+
+            // Construct URL with pagination and sorting
+            const url = `${API_BASE_URL}?page=${page}&size=${pageSize}&sort=id,asc`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return response.json();
+                })
+                .then(pageData => {
+                    bookList.innerHTML = "";
+                    const books = pageData.content;
+
+                    if (books.length === 0) {
+                        bookList.innerHTML = '<li>No books found.</li>';
+                        pageInfo.textContent = "Page 0 of 0";
+                        prevPageBtn.disabled = true;
+                        nextPageBtn.disabled = true;
+                        return;
+                    }
+
+                    books.forEach(book => {
+                        const li = document.createElement("li");
+                        li.innerHTML = `
+                            <div class="book-info">
+                                <strong>ID:</strong> ${book.id} | 
+                                <strong>Title:</strong> ${book.title} | 
+                                <strong>Genre:</strong> ${book.genre || "N/A"} | 
+                                <strong>Price:</strong> $${book.price || "N/A"}
+                            </div>
+                            <button class="delete" onclick="deleteBook(${book.id})">🗑️ Delete</button>
+                        `;
+                        bookList.appendChild(li);
+                    });
+
+                    // Update pagination controls
+                    currentPage = pageData.number;
+                    pageInfo.textContent = `Page ${currentPage + 1} of ${pageData.totalPages}`;
+                    prevPageBtn.disabled = pageData.first;
+                    nextPageBtn.disabled = pageData.last;
+                })
+                .catch(error => {
+                    console.error("Error loading books:", error);
+                    bookList.innerHTML = `<li class="error">Error loading books: ${error.message}</li>`;
+                });
+        }
+
+        function nextPage() {
+            loadBooks(currentPage + 1);
+        }
+
+        function prevPage() {
+            loadBooks(currentPage - 1);
+        }
+
+        // --- OTHER FUNCTIONS (NO CHANGES) ---
+
+        function addBook() {
+            const title = document.getElementById("title").value.trim();
+            const genre = document.getElementById("genre").value.trim();
+            const price = parseFloat(document.getElementById("price").value);
+            const publishedDate = document.getElementById("publishedDate").value;
+            const isbn = document.getElementById("isbn").value.trim();
+            const authorId = parseInt(document.getElementById("authorId").value);
+
+            if (!title || !genre || isNaN(price) || !publishedDate || !isbn || isNaN(authorId) || price <= 0 || authorId <= 0) {
+                alert("❌ Please fill in all fields correctly!");
+                return;
+            }
+
+            const bookData = { title, genre, price, publishedDate, isbn, authorId };
+
+            fetch(API_BASE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(bookData)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(() => {
+                alert("✅ Book added successfully!");
+                clearAddForm();
+                loadBooks(0); // Go back to the first page to see the new book
+            })
+            .catch(error => {
+                console.error("Error adding book:", error);
+                alert(`❌ Error adding book: ${error.message}`);
+            });
+        }
+
+        function getBookById() {
+            const bookId = parseInt(document.getElementById("bookIdInput").value);
+            const bookDetails = document.getElementById("bookDetails");
+
+            if (isNaN(bookId) || bookId <= 0) {
+                bookDetails.innerHTML = '<div class="error">Please enter a valid Book ID!</div>';
+                return;
+            }
+
+            bookDetails.innerHTML = '<div class="loading">Searching...</div>';
+
+            fetch(`${API_BASE_URL}/${bookId}`)
+                .then(response => {
+                    if (response.status === 404) throw new Error("Book not found!");
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return response.json();
+                })
+                .then(book => {
+                    bookDetails.innerHTML = `
+                        <strong>ID:</strong> ${book.id}<br>
+                        <strong>Title:</strong> ${book.title}<br>
+                        <strong>Genre:</strong> ${book.genre || "N/A"}<br>
+                        <strong>Price:</strong> $${book.price || "N/A"}<br>
+                        <strong>Published Date:</strong> ${book.publishedDate || "N/A"}<br>
+                        <strong>ISBN:</strong> ${book.isbn || "N/A"}<br>
+                        <strong>Author ID:</strong> ${book.authorId || "N/A"}
+                    `;
+                })
+                .catch(error => {
+                    console.error("Error fetching book:", error);
+                    bookDetails.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                });
+        }
+
+        function updateBook() {
+            const bookId = parseInt(document.getElementById("updateBookId").value);
+            const title = document.getElementById("updateTitle").value.trim();
+            const genre = document.getElementById("updateGenre").value.trim();
+            const price = parseFloat(document.getElementById("updatePrice").value);
+            const publishedDate = document.getElementById("updatePublishedDate").value;
+            const isbn = document.getElementById("updateIsbn").value.trim();
+            const authorId = parseInt(document.getElementById("updateAuthorId").value);
+
+            if (isNaN(bookId) || bookId <= 0 || !title) {
+                alert("❌ Please provide a valid Book ID and Title!");
+                return;
+            }
+
+            // Create an object with only the fields that are filled
+            const bookData = {};
+            if (title) bookData.title = title;
+            if (genre) bookData.genre = genre;
+            if (!isNaN(price) && price > 0) bookData.price = price;
+            if (publishedDate) bookData.publishedDate = publishedDate;
+            if (isbn) bookData.isbn = isbn;
+            if (!isNaN(authorId) && authorId > 0) bookData.authorId = authorId;
+
+
+            fetch(`${API_BASE_URL}/${bookId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(bookData)
+            })
+            .then(response => {
+                if (response.status === 404) throw new Error("Book not found!");
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(() => {
+                alert("✅ Book updated successfully!");
+                clearUpdateForm();
+                loadBooks(currentPage); // Reload the current page
+            })
+            .catch(error => {
+                console.error("Error updating book:", error);
+                alert(`❌ Error updating book: ${error.message}`);
+            });
+        }
+
+        function deleteBook(bookId) {
+            if (!confirm(`Are you sure you want to delete book ID ${bookId}?`)) {
+                return;
+            }
+
+            fetch(`${API_BASE_URL}/${bookId}`, { method: "DELETE" })
+                .then(response => {
+                    if (response.status === 404) throw new Error("Book not found!");
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    alert("✅ Book deleted successfully!");
+                    loadBooks(currentPage); // Reload the current page
+                })
+                .catch(error => {
+                    console.error("Error deleting book:", error);
+                    alert(`❌ Error deleting book: ${error.message}`);
+                });
+        }
+
+        function clearAddForm() {
+            document.getElementById("title").value = "";
+            document.getElementById("genre").value = "";
+            document.getElementById("price").value = "";
+            document.getElementById("publishedDate").value = "";
+            document.getElementById("isbn").value = "";
+            document.getElementById("authorId").value = "";
+        }
+
+        function clearUpdateForm() {
+            document.getElementById("updateBookId").value = "";
+            document.getElementById("updateTitle").value = "";
+            document.getElementById("updateGenre").value = "";
+            document.getElementById("updatePrice").value = "";
+            document.getElementById("updatePublishedDate").value = "";
+            document.getElementById("updateIsbn").value = "";
+            document.getElementById("updateAuthorId").value = "";
+        }
+
+        window.addEventListener('load', () => loadBooks(0));
+    </script>
+</body>
+</html>

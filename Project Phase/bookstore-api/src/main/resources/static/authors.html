@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Author CRUD</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, button { margin: 5px; }
+    ul { list-style-type: none; padding: 0; }
+    li { margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>Author Management</h1>
+
+  <!-- Create Author -->
+  <h2>Add Author</h2>
+  <input type="text" id="name" placeholder="Author Name">
+  <input type="text" id="bio" placeholder="Biography">
+  <button onclick="addAuthor()">Add</button>
+
+  <!-- Read All Authors -->
+  <h2>Authors List</h2>
+  <button onclick="fetchAuthors()">Refresh</button>
+  <ul id="authorList"></ul>
+
+  <!-- Read Author by ID -->
+  <h2>Get Author by ID</h2>
+  <input type="number" id="getId" placeholder="Author ID">
+  <button onclick="getAuthorById()">Get</button>
+  <p id="singleAuthor"></p>
+
+  <!-- Update Author -->
+  <h2>Update Author</h2>
+  <input type="number" id="updateId" placeholder="Author ID">
+  <input type="text" id="updateName" placeholder="New Name">
+  <input type="text" id="updateBio" placeholder="New Biography">
+  <button onclick="updateAuthor()">Update</button>
+
+  <script>
+    const api = 'http://localhost:8080/api/authors';
+
+    function addAuthor() {
+      const name = document.getElementById('name').value;
+      const biography = document.getElementById('bio').value;
+
+      fetch(api, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, biography })
+      })
+      .then(res => res.json())
+      .then(() => {
+        alert('Author added!');
+        fetchAuthors();
+      });
+    }
+
+    function fetchAuthors() {
+      fetch(api)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById('authorList');
+          list.innerHTML = '';
+          data.forEach(a => {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${a.id}: ${a.name}</strong> - ${a.biography || 'N/A'} 
+              <button onclick="deleteAuthor(${a.id})">Delete</button>`;
+            list.appendChild(li);
+          });
+        });
+    }
+
+    function deleteAuthor(id) {
+      fetch(`${api}/${id}`, { method: 'DELETE' })
+        .then(() => {
+          alert('Deleted!');
+          fetchAuthors();
+        });
+    }
+
+    function getAuthorById() {
+      const id = document.getElementById('getId').value;
+      if (!id) return alert('Enter ID');
+
+      fetch(`${api}/${id}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Not found");
+          return res.json();
+        })
+        .then(author => {
+          document.getElementById('singleAuthor').innerText =
+            `${author.name} — ${author.biography || 'N/A'}`;
+        })
+        .catch(err => {
+          document.getElementById('singleAuthor').innerText = 'Author not found!';
+        });
+    }
+
+    function updateAuthor() {
+      const id = document.getElementById('updateId').value;
+      const name = document.getElementById('updateName').value;
+      const biography = document.getElementById('updateBio').value;
+
+      fetch(`${api}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, biography })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Update failed");
+        return res.json();
+      })
+      .then(() => {
+        alert('Author updated!');
+        fetchAuthors();
+      })
+      .catch(err => {
+        alert('Update failed!');
+      });
+    }
+
+    // Load authors on page load
+    fetchAuthors();
+  </script>
+</body>
+</html>
