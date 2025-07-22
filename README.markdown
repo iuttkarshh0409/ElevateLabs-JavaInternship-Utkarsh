@@ -17,34 +17,65 @@ Welcome to my official repository for the **Elevate Labs Java Developer Internsh
 
 ## 📁 Repository Structure
 
+This repository contains my work for the Elevate Labs Java Developer Internship, showcasing daily tasks and a major project, the RESTful Bookstore API. The repository is divided into two main phases: Task-Phase for daily assignments and Project-Phase for the bookstore-api project.
+
+The Project-Phase contains the RESTful Bookstore API, a Spring Boot application built with Java 17, Spring Data JPA, Hibernate, and H2 in-memory database. It features full CRUD operations, advanced querying, Swagger UI documentation, and a clean layered architecture.
+Landing Page: A polished HTML page showcasing the API's features and technology stack.
+Author CRUD UI: A web-based interface for managing authors via the API.
+For setup and usage, refer to the bookstore-api/README.md.
+
+The Task-Phase includes daily assignments completed during the internship, covering fundamental Java concepts to advanced topics like JDBC and MySQL integration. Each day's folder contains a Java application and a README with details.
+
 ```
 ELEVATELABS-JAVAINTERNSHIP-UTKARSH/
-├── Day-8/                   # Java Console Quiz Application
-│   ├── QuizApp.java      
-│   └── README.md           
-├── Day-7/                   # Employee Management System (JDBC + MySQL)
-│   ├── EmployeeDBApp.java
-│   └── README.md
-├── Day-6/                   # To-Do Application
-│   ├── ToDoApp.java
-│   └── README.md
-├── Day-5/                   # Bank Management Application
-│   ├── BankApp.java
-│   └── README.md
-├── Day-4/                   # Notes App using FileReader/FileWriter
-│   ├── NotesManagementApplication.java
-│   └── README.md
-├── Day-3/                   # Palindrome Checker
-│   ├── LibraryManagementApplication.java
-│   └── README.md
-├── Day-2/                   # Library Management System (OOP)
-│   ├── StudentManagementSystem.java
-│   └── README.md
-├── Day-1/                   # Notes App using FileReader/FileWriter
-│   ├── Calculator.java
-│   └── README.md
-├── LEARNING_LOG.md         # Daily & Weekly learning reflections
-└── README.md                # Repository overview (this file)
+├── Project-Phase/                   # Major project work
+│   ├── bookstore-api/              # RESTful Bookstore API project
+│   │   ├── src/
+│   │   │   ├── main/
+│   │   │   │   ├── java/com/utkarsh/bookstore/
+│   │   │   │   │   ├── controller/    # API controllers
+│   │   │   │   │   ├── exception/     # Custom exception handling
+│   │   │   │   │   ├── model/         # Data models (entities)
+│   │   │   │   │   ├── repository/    # Data access layer
+│   │   │   │   │   └── service/       # Business logic
+│   │   │   │   │       └── impl/      # Service implementations
+│   │   │   │   └── resources/
+│   │   │   │       ├── static/        # Static assets (e.g., landing page)
+│   │   │   │       └── templates/     # HTML templates
+│   │   │   └── test/java/com/utkarsh/bookstore/ # Unit tests
+│   │   └── target/                    # Build output
+│   │       ├── classes/               # Compiled classes
+│   │       ├── generated-sources/     # Generated source files
+│   │       ├── generated-test-sources/ # Generated test sources
+│   │       └── test-classes/          # Compiled test classes
+├── Task-Phase/                      # Daily task assignments
+│   ├── Day-1/                      # Simple Calculator
+│   │   ├── Calculator.java
+│   │   └── README.md
+│   ├── Day-2/                      # Library Management System (OOP)
+│   │   ├── StudentManagementSystem.java
+│   │   └── README.md
+│   ├── Day-3/                      # Palindrome Checker
+│   │   ├── LibraryManagementApplication.java
+│   │   └── README.md
+│   ├── Day-4/                      # Notes App using FileReader/FileWriter
+│   │   ├── NotesManagementApplication.java
+│   │   └── README.md
+│   ├── Day-5/                      # Bank Management Application
+│   │   ├── BankApp.java
+│   │   └── README.md
+│   ├── Day-6/                      # To-Do Application
+│   │   ├── ToDoApp.java
+│   │   └── README.md
+│   ├── Day-7/                      # Employee Management System (JDBC + MySQL)
+│   │   ├── EmployeeDBApp.java
+│   │   └── README.md
+│   ├── Day-8/                      # Java Console Quiz Application
+│   │   ├── QuizApp.java
+│   │   └── README.md
+├── LEARNING_LOG.md                 # Daily & Weekly learning reflections
+└── README.md                       # Repository overview (this file)
+
 ```
 
 > **Note**: Each task resides in a dedicated `Day-X` folder, where `X` represents the task day.
