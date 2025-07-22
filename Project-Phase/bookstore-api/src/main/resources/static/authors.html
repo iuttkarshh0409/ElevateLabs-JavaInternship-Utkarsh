@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Author CRUD</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .toast { transition: opacity 0.5s; }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-4">
+  <div class="container mx-auto max-w-4xl">
+    <h1 class="text-3xl md:text-4xl font-bold text-center mb-8 animate-fade-in">Author Management</h1>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg hidden toast"></div>
+
+    <!-- Create Author -->
+    <section class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mb-8 animate-fade-in">
+      <h2 class="text-2xl font-semibold mb-4">Add Author</h2>
+      <div class="flex flex-col md:flex-row gap-4">
+        <input type="text" id="name" placeholder="Author Name" class="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="bio" placeholder="Biography" class="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button onclick="addAuthor()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">Add</button>
+      </div>
+    </section>
+
+    <!-- Read All Authors -->
+    <section class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mb-8 animate-fade-in">
+      <h2 class="text-2xl font-semibold mb-4">Authors List</h2>
+      <button onclick="fetchAuthors()" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 mb-4">Refresh</button>
+      <ul id="authorList" class="space-y-4"></ul>
+      <div id="loading" class="hidden text-center text-gray-500 dark:text-gray-400">Loading...</div>
+    </section>
+
+    <!-- Read Author by ID -->
+    <section class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mb-8 animate-fade-in">
+      <h2 class="text-2xl font-semibold mb-4">Get Author by ID</h2>
+      <div class="flex flex-col md:flex-row gap-4">
+        <input type="number" id="getId" placeholder="Author ID" class="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button onclick="getAuthorById()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">Get</button>
+      </div>
+      <p id="singleAuthor" class="mt-4 text-gray-700 dark:text-gray-300"></p>
+    </section>
+
+    <!-- Update Author -->
+    <section class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg animate-fade-in">
+      <h2 class="text-2xl font-semibold mb-4">Update Author</h2>
+      <div class="flex flex-col md:flex-row gap-4">
+        <input type="number" id="updateId" placeholder="Author ID" class="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="updateName" placeholder="New Name" class="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="updateBio" placeholder="New Biography" class="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button onclick="updateAuthor()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">Update</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const api = 'http://localhost:8080/api/authors';
+    const toast = document.getElementById('toast');
+
+    function showToast(message, isError = false) {
+      toast.textContent = message;
+      toast.classList.remove('hidden', isError ? 'bg-green-600' : 'bg-red-600');
+      toast.classList.add(isError ? 'bg-red-600' : 'bg-green-600');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    async function addAuthor() {
+      const name = document.getElementById('name').value.trim();
+      const biography = document.getElementById('bio').value.trim();
+      if (!name) return showToast('Author name is required', true);
+
+      try {
+        const res = await fetch(api, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, biography })
+        });
+        if (!res.ok) throw new Error('Failed to add author');
+        await res.json();
+        showToast('Author added successfully!');
+        document.getElementById('name').value = '';
+        document.getElementById('bio').value = '';
+        fetchAuthors();
+      } catch (err) {
+        showToast('Error adding author', true);
+      }
+    }
+
+    async function fetchAuthors() {
+      const list = document.getElementById('authorList');
+      const loading = document.getElementById('loading');
+      list.classList.add('hidden');
+      loading.classList.remove('hidden');
+
+      try {
+        const res = await fetch(api);
+        if (!res.ok) throw new Error('Failed to fetch authors');
+        const data = await res.json();
+        list.innerHTML = '';
+        data.forEach(a => {
+          const li = document.createElement('li');
+          li.className = 'bg-gray-50 dark:bg-gray-700 p-4 rounded-lg flex justify-between items-center';
+          li.innerHTML = `
+            <span><strong>${a.id}: ${a.name}</strong> - ${a.biography || 'N/A'}</span>
+            <button onclick="deleteAuthor(${a.id})" class="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-lg transition duration-300">Delete</button>`;
+          list.appendChild(li);
+        });
+        list.classList.remove('hidden');
+      } catch (err) {
+        showToast('Error fetching authors', true);
+      } finally {
+        loading.classList.add('hidden');
+      }
+    }
+
+    async function deleteAuthor(id) {
+      try {
+        const res = await fetch(`${api}/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete author');
+        showToast('Author deleted successfully!');
+        fetchAuthors();
+      } catch (err) {
+        showToast('Error deleting author', true);
+      }
+    }
+
+    async function getAuthorById() {
+      const id = document.getElementById('getId').value.trim();
+      if (!id) return showToast('Author ID is required', true);
+
+      try {
+        const res = await fetch(`${api}/${id}`);
+        if (!res.ok) throw new Error('Author not found');
+        const author = await res.json();
+        document.getElementById('singleAuthor').innerText = `${author.name} — ${author.biography || 'N/A'}`;
+      } catch (err) {
+        document.getElementById('singleAuthor').innerText = 'Author not found!';
+        showToast('Error fetching author', true);
+      }
+    }
+
+    async function updateAuthor() {
+      const id = document.getElementById('updateId').value.trim();
+      const name = document.getElementById('updateName').value.trim();
+      const biography = document.getElementById('updateBio').value.trim();
+      if (!id || !name) return showToast('Author ID and name are required', true);
+
+      try {
+        const res = await fetch(`${api}/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, biography })
+        });
+        if (!res.ok) throw new Error('Failed to update author');
+        await res.json();
+        showToast('Author updated successfully!');
+        document.getElementById('updateId').value = '';
+        document.getElementById('updateName').value = '';
+        document.getElementById('updateBio').value = '';
+        fetchAuthors();
+      } catch (err) {
+        showToast('Error updating author', true);
+      }
+    }
+
+    // Load authors on page load
+    fetchAuthors();
+  </script>
+</body>
+</html>
